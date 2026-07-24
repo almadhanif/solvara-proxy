@@ -74,6 +74,9 @@ umrohnaturindo.com {
 		header_up X-Forwarded-Proto {scheme}
 	}
 }
+www.umrohnaturindo.com {
+	reverse_proxy umroh-campaign:3003
+}
 
 # Redirect all plain HTTP -> HTTPS.
 :80 {
