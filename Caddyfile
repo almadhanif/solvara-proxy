@@ -1,0 +1,37 @@
+# Solvara — universal reverse proxy.
+#
+# One site block per app. Caddy automatically provisions and renews a Let's
+# Encrypt certificate for each hostname as soon as its DNS resolves to this
+# server and ports 80/443 are reachable.
+#
+# Each app container must be on the external `web` docker network; reference it
+# by its container_name.
+
+# --- Solvara main landing page (Next.js frontend) ---
+solvara-tech.com {
+	encode gzip zstd
+
+	reverse_proxy solvara-frontend:3001 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# --- Used-car listing app (Logique Motors) ---
+logique-test.solvara-tech.com {
+	encode gzip zstd
+
+	reverse_proxy logique-motors:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# Redirect all plain HTTP -> HTTPS.
+:80 {
+	redir https://{host}{uri} permanent
+}

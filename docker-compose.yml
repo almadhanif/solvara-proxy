@@ -1,0 +1,39 @@
+# Solvara — shared reverse proxy (Caddy).
+#
+# This is the SINGLE entry point for ports 80/443 on the host. Every app that
+# wants HTTPS joins the external `web` docker network and gets a site block in
+# Caddyfile below. No other project should bind 80/443.
+#
+# Deploy:
+#   docker network create web     # once, on the host
+#   docker compose up -d
+#
+# Add an app:
+#   1. Put the app's container on the `web` network (external: true) in its own
+#      compose file.
+#   2. Add a `<domain> { reverse_proxy <container-name>:<port> }` block here.
+#   3. Point the domain's DNS A record at this server.
+#   4. `docker compose restart caddy` (Caddy auto-provisions the cert).
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: solvara-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
+
+volumes:
+  caddy-data:
+  caddy-config:
