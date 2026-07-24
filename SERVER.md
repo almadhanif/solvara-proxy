@@ -18,6 +18,7 @@ compose project:
 |---|---|---|---|
 | `/opt/apps/solvara/proxy` | `almadhanif/solvara-proxy` | `solvara-caddy` | `80/443` (the only thing on these ports) |
 | `/opt/apps/solvara/solvara-frontend` | `almadhanif/solvara-frontend` | `solvara-frontend` | `3001` (internal) |
+| `/opt/apps/solvara/sigap` | `almadhanif/solvara-sigap` | `sigap-frontend`, `sigap-minio`, `sigap-postgres` | `3002` (app, internal), `9000` (MinIO S3), `9001` (MinIO console) |
 | `/opt/apps/solvara/logique-test` | `almadhanif/logique-test` | `logique-motors` | `3000` (internal) |
 
 ## Architecture (one universal proxy)
@@ -44,6 +45,9 @@ All domains are under `solvara-tech.com`. A records → `82.197.68.92`:
 |---|---|
 | `solvara-tech.com` (apex) | solvara-frontend |
 | `www.solvara-tech.com` | solvara-frontend |
+| `sigap.solvara-tech.com` | sigap-frontend (SIGAP/MBG app) |
+| `sigap-cdn.solvara-tech.com` | sigap-minio:9000 (public presigned URLs) |
+| `sigap-console.solvara-tech.com` | sigap-minio:9001 (MinIO admin console) |
 | `logique-test.solvara-tech.com` | logique-motors (used-car app) |
 
 Manage DNS at your registrar. After changing an A record, Caddy picks up the
@@ -152,4 +156,7 @@ docker compose up -d --build
 |---|---|---|---|
 | `solvara-caddy` | 80, 443 | 80, 443 | (public entry point) |
 | `solvara-frontend` | 3001 | — | `solvara-frontend:3001` on `web` |
+| `sigap-frontend` | 3002 | — | `sigap-frontend:3002` on `web` |
+| `sigap-minio` | 9000, 9001 | — | `sigap-minio:9000` / `:9001` on `web` |
+| `sigap-postgres` | 5432 | — | `sigap-postgres:5432` on `sigap-network` only |
 | `logique-motors` | 3000 | — | `logique-motors:3000` on `web` |

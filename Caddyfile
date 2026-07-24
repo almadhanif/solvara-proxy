@@ -22,6 +22,35 @@ www.solvara-tech.com {
 	reverse_proxy solvara-frontend:3001
 }
 
+# --- Solvara Sigap (MBG) ---
+sigap.solvara-tech.com {
+	encode gzip zstd
+
+	reverse_proxy sigap-frontend:3002 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# SIGAP MinIO S3 API — serves public presigned URLs for evidence files.
+# Host MUST be passed through: presigned URLs are SigV4-signed against this
+# public hostname, so MinIO needs to see it to validate the signature.
+sigap-cdn.solvara-tech.com {
+	reverse_proxy sigap-minio:9000 {
+		header_up Host {host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# SIGAP MinIO admin console.
+sigap-console.solvara-tech.com {
+	reverse_proxy sigap-minio:9001 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 # --- Used-car listing app (Logique Motors) ---
 logique-test.solvara-tech.com {
 	encode gzip zstd
