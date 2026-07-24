@@ -18,6 +18,9 @@ solvara-tech.com {
 		header_up X-Forwarded-Proto {scheme}
 	}
 }
+www.solvara-tech.com {
+	reverse_proxy solvara-frontend:3001
+}
 
 # --- Used-car listing app (Logique Motors) ---
 logique-test.solvara-tech.com {
