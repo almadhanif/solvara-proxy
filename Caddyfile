@@ -63,6 +63,18 @@ logique-test.solvara-tech.com {
 	}
 }
 
+# --- Umroh campaign (client domain; apex only, no www) ---
+umrohnaturindo.com {
+	encode gzip zstd
+
+	reverse_proxy umroh-campaign:3003 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 # Redirect all plain HTTP -> HTTPS.
 :80 {
 	redir https://{host}{uri} permanent
