@@ -13,9 +13,10 @@ docker network create web
 
 ```bash
 git pull
-docker compose up -d        # creates/recreates the caddy container
-# or, after editing Caddyfile only:
-docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+# Recreate (NOT reload) so the new Caddyfile inode is picked up:
+# git replaces the file with a new inode, and the bind-mounted container keeps
+# seeing the old one until it is recreated.
+docker compose up -d --force-recreate caddy
 ```
 
 ## Add a new app
@@ -34,7 +35,7 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
    }
    ```
 3. Point the domain's DNS A record at this server.
-4. Reload Caddy (`docker compose restart caddy`). The cert is auto-provisioned.
+4. Recreate Caddy (`docker compose up -d --force-recreate caddy`). The cert is auto-provisioned.
 
 ## What lives where
 

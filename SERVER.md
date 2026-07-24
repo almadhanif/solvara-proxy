@@ -85,7 +85,7 @@ port.
 4. **Deploy proxy change** — on the server:
    ```bash
    cd /opt/apps/solvara/proxy && git pull
-   docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+   docker compose up -d --force-recreate caddy   # recreate, NOT reload (see "Update the proxy itself")
    ```
    The cert is provisioned automatically.
 
@@ -108,13 +108,25 @@ docker compose up -d --build        # rebuild image, recreate container, run ent
 
 ## Update the proxy itself
 
+> ⚠️ **Gotcha — `git pull` then `reload` is NOT enough.** The Caddyfile is a
+> read-only bind mount. `git pull` replaces the file with a **new inode**
+> (atomic write+rename), but the running container still sees the **old** inode,
+> so `caddy reload` loads stale content and new site blocks never take effect
+> (and their certs never provision). After any `git pull` that changes the
+> Caddyfile you MUST **recreate** the container, not just reload.
+
 ```bash
 cd /opt/apps/solvara/proxy
 git pull
-docker compose up -d                 # recreate caddy (e.g. after compose change)
-# or, after editing ONLY the Caddyfile, zero-downtime reload:
-docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+# validate first, then recreate so the new Caddyfile inode is picked up:
+docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+  caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+docker compose up -d --force-recreate caddy
 ```
+
+A plain `docker compose exec caddy caddy reload ...` only works when the
+Caddyfile was **edited in place** (same inode), e.g. hot-edited on the server
+without git — not after a `git pull`.
 
 Before applying a Caddyfile change, validate it:
 ```bash
