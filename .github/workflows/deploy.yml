@@ -1,0 +1,69 @@
+name: Deploy
+
+# Deploys the shared Caddy reverse proxy to the Solvara server on every push
+# to main. Validates the Caddyfile in CI before touching the server, so a
+# syntax error fails the build instead of taking 80/443 offline.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   SSH_HOST         e.g. 82.197.68.92
+#   SSH_USER         e.g. almadhani
+#   SSH_PRIVATE_KEY  an ed25519/RSA private key authorized on the server
+# Optional:
+#   SSH_PORT         default 22
+#   DEPLOY_PATH      default /opt/apps/solvara/proxy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # manual run from the Actions tab
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false # never interrupt a deploy mid-flight
+
+jobs:
+  validate:
+    name: Validate Caddyfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: caddy validate
+        # The Caddyfile has no env interpolation, so a plain container is enough.
+        # Fail here so a broken config never reaches the server.
+        run: |
+          docker run --rm \
+            -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+  deploy:
+    name: Deploy to server
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH || '/opt/apps/solvara/proxy' }}'
+
+            echo "==> Pulling latest changes"
+            git pull --ff-only
+
+            echo "==> Validating Caddyfile on server"
+            docker run --rm \
+              -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+              caddy:2-alpine \
+              caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+            echo "==> Recreating caddy (force-recreate so the new Caddyfile inode is picked up)"
+            docker compose up -d --force-recreate caddy
+
+            echo "==> Done"
+            docker ps --filter name=solvara-caddy --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'

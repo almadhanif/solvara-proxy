@@ -3,6 +3,26 @@
 Shared Caddy reverse proxy for the Solvara server. This is the single service
 that binds ports **80/443** and terminates HTTPS for every app on the host.
 
+## CI/CD (GitHub Actions)
+
+Pushing to `main` triggers `.github/workflows/deploy.yml`, which validates the
+Caddyfile in CI and then SSHes into the server to `git pull` + recreate Caddy.
+A manual run is also available from the Actions tab (`workflow_dispatch`).
+
+Add these repo secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Required | Example |
+|---|---|---|
+| `SSH_HOST` | yes | `82.197.68.92` |
+| `SSH_USER` | yes | `almadhani` |
+| `SSH_PRIVATE_KEY` | yes | an ed25519/RSA key authorized on the server |
+| `SSH_PORT` | no | `22` (default) |
+| `DEPLOY_PATH` | no | `/opt/apps/solvara/proxy` (default) |
+
+Generate a dedicated deploy key (no passphrase) and add its **public** half to
+the server user's `~/.ssh/authorized_keys`. The workflow needs no sudo —
+`docker compose` is run as the SSH user.
+
 ## One-time host setup
 
 ```bash
