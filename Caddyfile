@@ -93,6 +93,18 @@ www.indotamatunasmandiri.co.id {
 	reverse_proxy indotama-hcmis:3000
 }
 
+# --- Netdata server monitoring (native systemd service on the host) ---
+# Reaches the host's 127.0.0.1:19999 from inside the container via the Docker
+# host gateway (see extra_hosts in docker-compose.yml). Protected with HTTP
+# basic auth — do NOT expose netdata without it.
+monitor.solvara-tech.com {
+	encode gzip zstd
+	basic_auth {
+		admin "$2a$14$FKeR.tsMPz3aEPxEQUVIAOpltciw/zJwgxMvI89HqfBawfd.b28my"
+	}
+	reverse_proxy host.docker.internal:19999
+}
+
 # Redirect all plain HTTP -> HTTPS.
 :80 {
 	redir https://{host}{uri} permanent

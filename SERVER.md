@@ -49,6 +49,7 @@ All domains are under `solvara-tech.com`. A records → `82.197.68.92`:
 | `sigap-cdn.solvara-tech.com` | sigap-minio:9000 (public presigned URLs) |
 | `sigap-console.solvara-tech.com` | sigap-minio:9001 (MinIO admin console) |
 | `logique-test.solvara-tech.com` | logique-motors (used-car app) |
+| `monitor.solvara-tech.com` | netdata (host-native, port 19999 — basic_auth protected) |
 
 Manage DNS at your registrar. After changing an A record, Caddy picks up the
 cert automatically within ~1–2 min (it retries on a loop).

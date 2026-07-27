@@ -27,6 +27,9 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
+    extra_hosts:
+      # lets Caddy reach host-native services (e.g. netdata on :19999)
+      - "host.docker.internal:host-gateway"
     networks:
       - web
 
