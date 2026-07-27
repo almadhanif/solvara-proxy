@@ -78,6 +78,21 @@ www.umrohnaturindo.com {
 	reverse_proxy umroh-campaign:3003
 }
 
+# --- Indotama HCMIS (PT. Indotama Tunas Mandiri) ---
+indotamatunasmandiri.co.id {
+	encode gzip zstd
+
+	reverse_proxy indotama-hcmis:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+www.indotamatunasmandiri.co.id {
+	reverse_proxy indotama-hcmis:3000
+}
+
 # Redirect all plain HTTP -> HTTPS.
 :80 {
 	redir https://{host}{uri} permanent
