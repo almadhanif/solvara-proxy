@@ -22,6 +22,18 @@ www.solvara-tech.com {
 	reverse_proxy solvara-frontend:3001
 }
 
+# --- Solvara JAGA (manajemen tenaga kerja lapangan) ---
+jaga.solvara-tech.com {
+	encode gzip zstd
+
+	reverse_proxy solvara-jaga:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 # --- Solvara Sigap (MBG) ---
 sigap.solvara-tech.com {
 	encode gzip zstd
