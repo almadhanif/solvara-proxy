@@ -20,6 +20,8 @@ compose project:
 | `/opt/apps/solvara/solvara-frontend` | `almadhanif/solvara-frontend` | `solvara-frontend` | `3001` (internal) |
 | `/opt/apps/solvara/sigap` | `almadhanif/solvara-sigap` | `sigap-frontend`, `sigap-minio`, `sigap-postgres` | `3002` (app, internal), `9000` (MinIO S3), `9001` (MinIO console) |
 | `/opt/apps/solvara/logique-test` | `almadhanif/logique-test` | `logique-motors` | `3000` (internal) |
+| `/opt/apps/solvara/intelligence` | `almadhanif/solvara-intelligence` | `solvara-intelligence`, `solvara-intelligence-worker` | `8001` (internal; RabbitMQ worker has no port) |
+| `/opt/apps/solvara/prakira-sawit` | `almadhanif/prakira-sawit` | `prakira-sawit`, `prakira-postgres` | `3000` (app, internal), `5432` (Postgres, internal `prakira-network` only) |
 
 ## Architecture (one universal proxy)
 
@@ -49,6 +51,8 @@ All domains are under `solvara-tech.com`. A records → `82.197.68.92`:
 | `sigap-cdn.solvara-tech.com` | sigap-minio:9000 (public presigned URLs) |
 | `sigap-console.solvara-tech.com` | sigap-minio:9001 (MinIO admin console) |
 | `logique-test.solvara-tech.com` | logique-motors (used-car app) |
+| `intelligence.solvara-tech.com` | solvara-intelligence (FastAPI ML backend) |
+| `prakira-sawit.solvara-tech.com` | prakira-sawit (proyeksi harga TBS sawit) |
 | `monitor.solvara-tech.com` | netdata (host-native, port 19999 — basic_auth protected) |
 
 Manage DNS at your registrar. After changing an A record, Caddy picks up the
@@ -173,3 +177,7 @@ docker compose up -d --build
 | `sigap-minio` | 9000, 9001 | — | `sigap-minio:9000` / `:9001` on `web` |
 | `sigap-postgres` | 5432 | — | `sigap-postgres:5432` on `sigap-network` only |
 | `logique-motors` | 3000 | — | `logique-motors:3000` on `web` |
+| `solvara-intelligence` | 8001 | — | `solvara-intelligence:8001` on `web` |
+| `solvara-intelligence-worker` | — | — | RabbitMQ scraping worker (no port) |
+| `prakira-sawit` | 3000 | — | `prakira-sawit:3000` on `web` |
+| `prakira-postgres` | 5432 | — | `prakira-postgres:5432` on `prakira-network` only |

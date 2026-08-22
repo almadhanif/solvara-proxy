@@ -105,6 +105,30 @@ www.indotamatunasmandiri.co.id {
 	reverse_proxy indotama-hcmis:3000
 }
 
+# --- Solvara Intelligence (FastAPI ML backend: prediksi, backtest, scraping) ---
+intelligence.solvara-tech.com {
+	encode gzip zstd
+
+	reverse_proxy solvara-intelligence:8001 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# --- Prakira Sawit (proyeksi harga TBS kelapa sawit) ---
+prakira-sawit.solvara-tech.com {
+	encode gzip zstd
+
+	reverse_proxy prakira-sawit:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 # --- Netdata server monitoring (native systemd service on the host) ---
 # Reaches the host's 127.0.0.1:19999 from inside the container via the Docker
 # host gateway (see extra_hosts in docker-compose.yml). Protected with HTTP
