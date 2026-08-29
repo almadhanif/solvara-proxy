@@ -133,6 +133,9 @@ intelligence.solvara-tech.com {
 
 # --- Media artikel berita otomatis (Garage web endpoint) ---
 # Object hero artikel disajikan Garage :3902 (bucket solvara-media).
+# Garage v2 web endpoint hanya melayani vhost-style: Host harus
+# <bucket>.<root_domain dari garage.toml>. handle_path menghapus
+# prefix /solvara-media dari URL publik, header_up menyetel Host vhost.
 # Cache panjang aman: nama object tidak pernah ditimpa (object baru =
 # nama baru). S3 API Garage (:3900) TIDAK dipublikasikan — hanya
 # antar-container di network web.
@@ -145,10 +148,15 @@ media.solvara-tech.com {
 		-Server
 	}
 
-	reverse_proxy garage:3902 {
-		header_up Host {host}
-		header_up X-Forwarded-Proto {scheme}
+	handle_path /solvara-media/* {
+		reverse_proxy garage:3902 {
+			header_up Host solvara-media.web.solvara-tech.com
+			header_up X-Forwarded-Proto {scheme}
+		}
 	}
+
+	# Path di luar bucket salah alamat — 404 polos tanpa proxy.
+	respond 404
 }
 
 # --- Prakira Sawit (proyeksi harga TBS kelapa sawit) ---
