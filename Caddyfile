@@ -8,14 +8,28 @@
 # by its container_name.
 
 # --- Solvara main landing page (Next.js frontend) ---
+# Semua halaman marketing produk hidup di bawah path domain utama (konsolidasi
+# otoritas SEO satu domain). /prakira-sawit/* di-proxy ke app prakira-sawit
+# (Next.js basePath /prakira-sawit — path TIDAK di-strip).
 solvara-tech.com {
 	encode gzip zstd
 
-	reverse_proxy solvara-frontend:3001 {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-		header_up X-Forwarded-For {remote_host}
-		header_up X-Forwarded-Proto {scheme}
+	handle /prakira-sawit* {
+		reverse_proxy prakira-sawit:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	handle {
+		reverse_proxy solvara-frontend:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
 	}
 }
 www.solvara-tech.com {
@@ -118,15 +132,10 @@ intelligence.solvara-tech.com {
 }
 
 # --- Prakira Sawit (proyeksi harga TBS kelapa sawit) ---
+# Situs publik pindah ke solvara-tech.com/prakira-sawit (konsolidasi domain).
+# Subdomain lama di-redirect permanen agar backlink/index lama tidak hilang.
 prakira-sawit.solvara-tech.com {
-	encode gzip zstd
-
-	reverse_proxy prakira-sawit:3000 {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-		header_up X-Forwarded-For {remote_host}
-		header_up X-Forwarded-Proto {scheme}
-	}
+	redir https://solvara-tech.com/prakira-sawit{uri} permanent
 }
 
 # --- Netdata server monitoring (native systemd service on the host) ---
