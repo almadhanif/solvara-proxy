@@ -178,6 +178,50 @@ monitor.solvara-tech.com {
 	reverse_proxy host.docker.internal:19999
 }
 
+# --- Solvara Reserva: dashboard + landing ---
+reserva.solvara-tech.com {
+	encode gzip zstd
+	# defer: nilai di sini menang atas header yang (kelak) dikirim aplikasi — tidak ada duplikat.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		# Dashboard tidak boleh dibingkai situs lain (clickjacking); X-Frame-Options untuk browser lama.
+		Content-Security-Policy "frame-ancestors 'none'"
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		defer
+	}
+	# Upload s.d. 10 MB (+ overhead multipart) — batas efektif tetap di aplikasi (/api/uploads).
+	request_body {
+		max_size 12MB
+	}
+	reverse_proxy reserva-web:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# --- Solvara Reserva: form publik (Host diteruskan apa adanya — proxy.ts memilih route group dari Host) ---
+booking.solvara-tech.com {
+	encode gzip zstd
+	# Sengaja TANPA frame-ancestors/X-Frame-Options: tenant kelak boleh menyematkan form publik (iframe) di situsnya.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		Referrer-Policy strict-origin-when-cross-origin
+		defer
+	}
+	request_body {
+		max_size 12MB
+	}
+	reverse_proxy reserva-web:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 # Redirect all plain HTTP -> HTTPS.
 :80 {
 	redir https://{host}{uri} permanent
