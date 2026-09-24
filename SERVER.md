@@ -22,6 +22,7 @@ compose project:
 | `/opt/apps/solvara/logique-test` | `almadhanif/logique-test` | `logique-motors` | `3000` (internal) |
 | `/opt/apps/solvara/intelligence` | `almadhanif/solvara-intelligence` | `solvara-intelligence`, `solvara-intelligence-worker` | `8001` (internal; RabbitMQ worker has no port) |
 | `/opt/apps/solvara/prakira-sawit` | `almadhanif/prakira-sawit` | `prakira-sawit`, `prakira-postgres` | `3000` (app, internal), `5432` (Postgres, internal `prakira-network` only) |
+| `/opt/apps/solvara/reserva` | `almadhanif/solvara-reserva` | `reserva-web`, `reserva-worker`, `reserva-postgres` | `3000` (web, internal; image dari GHCR), `5432` (Postgres, internal `reserva-net` only) |
 
 ## Architecture (one universal proxy)
 
@@ -53,6 +54,8 @@ All domains are under `solvara-tech.com`. A records → `82.197.68.92`:
 | `logique-test.solvara-tech.com` | logique-motors (used-car app) |
 | `intelligence.solvara-tech.com` | solvara-intelligence (FastAPI ML backend) |
 | `prakira-sawit.solvara-tech.com` | prakira-sawit (proyeksi harga TBS sawit) |
+| `reserva.solvara-tech.com` | reserva-web (dashboard + landing Solvara Reserva) |
+| `booking.solvara-tech.com` | reserva-web (form publik Reserva; Host menentukan route) |
 | `monitor.solvara-tech.com` | netdata (host-native, port 19999 — basic_auth protected) |
 
 Manage DNS at your registrar. After changing an A record, Caddy picks up the
@@ -181,3 +184,6 @@ docker compose up -d --build
 | `solvara-intelligence-worker` | — | — | RabbitMQ scraping worker (no port) |
 | `prakira-sawit` | 3000 | — | `prakira-sawit:3000` on `web` |
 | `prakira-postgres` | 5432 | — | `prakira-postgres:5432` on `prakira-network` only |
+| `reserva-web` | 3000 | — | `reserva-web:3000` on `web` |
+| `reserva-worker` | — | — | pg-boss worker (email), `reserva-net` only |
+| `reserva-postgres` | 5432 | — | `reserva-postgres:5432` on `reserva-net` only |
