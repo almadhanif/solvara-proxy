@@ -50,7 +50,6 @@ All domains are under `solvara-tech.com`. A records → `82.197.68.92`:
 | `www.solvara-tech.com` | solvara-frontend |
 | `sigap.solvara-tech.com` | sigap-frontend (SIGAP/MBG app) |
 | `sigap-cdn.solvara-tech.com` | sigap-minio:9000 (public presigned URLs) |
-| `sigap-console.solvara-tech.com` | sigap-minio:9001 (MinIO admin console) |
 | `logique-test.solvara-tech.com` | logique-motors (used-car app) |
 | `intelligence.solvara-tech.com` | solvara-intelligence (FastAPI ML backend) |
 | `prakira-sawit.solvara-tech.com` | prakira-sawit (proyeksi harga TBS sawit) |
@@ -60,6 +59,16 @@ All domains are under `solvara-tech.com`. A records → `82.197.68.92`:
 
 Manage DNS at your registrar. After changing an A record, Caddy picks up the
 cert automatically within ~1–2 min (it retries on a loop).
+
+## MinIO console (SIGAP)
+
+Konsol admin MinIO **tidak** lagi dipublikasikan lewat Caddy. Akses lewat SSH tunnel:
+
+```bash
+# IP container di network `web`, lalu forward ke laptop
+IP=$(ssh almadhani@82.197.68.92 "docker inspect -f '{{(index .NetworkSettings.Networks \"web\").IPAddress}}' sigap-minio")
+ssh -N -L 9001:$IP:9001 almadhani@82.197.68.92   # lalu buka http://localhost:9001
+```
 
 ## Firewall
 
