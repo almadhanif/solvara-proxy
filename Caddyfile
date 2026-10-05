@@ -183,10 +183,9 @@ reserva.solvara-tech.com {
 	encode gzip zstd
 	# defer: nilai di sini menang atas header yang (kelak) dikirim aplikasi — tidak ada duplikat.
 	header {
-		Strict-Transport-Security "max-age=31536000"
-		# Dashboard tidak boleh dibingkai situs lain (clickjacking); X-Frame-Options untuk browser lama.
-		Content-Security-Policy "frame-ancestors 'none'"
-		X-Frame-Options DENY
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# CSP (termasuk frame-ancestors) dan X-Frame-Options dikirim aplikasi (src/proxy.ts di solvara-reserva).
+		# JANGAN menambah Content-Security-Policy di sini: `defer` akan menimpa kebijakan lengkap milik aplikasi.
 		Referrer-Policy strict-origin-when-cross-origin
 		defer
 	}
@@ -207,7 +206,7 @@ booking.solvara-tech.com {
 	encode gzip zstd
 	# Sengaja TANPA frame-ancestors/X-Frame-Options: tenant kelak boleh menyematkan form publik (iframe) di situsnya.
 	header {
-		Strict-Transport-Security "max-age=31536000"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		Referrer-Policy strict-origin-when-cross-origin
 		defer
 	}
