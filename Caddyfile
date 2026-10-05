@@ -70,12 +70,10 @@ sigap-cdn.solvara-tech.com {
 	}
 }
 
-# SIGAP MinIO admin console.
-sigap-console.solvara-tech.com {
-	reverse_proxy sigap-minio:9001 {
-		header_up X-Forwarded-Proto {scheme}
-	}
-}
+# SIGAP MinIO admin console: SENGAJA TIDAK dipublikasikan.
+# Konsol memakai kredensial root MinIO yang sama dengan yang dipakai aplikasi, jadi
+# halaman login publik = target brute-force ke seluruh penyimpanan. Akses lewat
+# SSH tunnel (lihat SERVER.md, bagian "MinIO console").
 
 # --- Used-car listing app (Logique Motors) ---
 logique-test.solvara-tech.com {
